@@ -50,7 +50,7 @@ export class EngineerSprite extends Sprite {
         return false;
     }
     public handle_tick() {        
-        this.animated_sprite.set_animation(this.get_animation_direction(this.previous_position, this.current_path[0]));
+        this.animated_sprite.set_animation(this.get_animation_direction(new Position(this.x,this.y), this.current_path[0]));
 
         this.movement_tick_counter++;
         if(this.movement_tick_counter==this.ticks_to_move_one_square)
@@ -89,15 +89,25 @@ export class EngineerSprite extends Sprite {
         let canvas = document.getElementById('canvas') as
             HTMLCanvasElement;
         let context = canvas.getContext("2d");
-        let render_location = grid_to_world_coords(new Position(this.x,this.y));
-        let y_render_location = (this.y * 32 / 2.0) + (this.x * 32 / 2.0);
+        let render_location: Position;
+        if(this.current_path[0]!=undefined)
+        {
+            let x_offset=(this.current_path[0].x-this.x)*(this.movement_tick_counter/this.ticks_to_move_one_square);
+            let y_offset=(this.current_path[0].y-this.y)*(this.movement_tick_counter/this.ticks_to_move_one_square);
+            render_location = grid_to_world_coords(new Position(this.x+x_offset,this.y+y_offset));
+        }
+        else
+        {
+            render_location = grid_to_world_coords(new Position(this.x,this.y));
+
+        }
         let source_rect = this.animated_sprite.frame_fn().source_rectangle;
         let dest_size = this.animated_sprite.frame_fn().dest_size;
 
-        context.drawImage(this.spritesheet, source_rect.x, source_rect.y, source_rect.w, source_rect.h, render_location.x, render_location.y, dest_size.x, dest_size.y);
+        context.drawImage(this.spritesheet, source_rect.x, source_rect.y, source_rect.w, source_rect.h, render_location.x-8, render_location.y+16, dest_size.x, dest_size.y);
 
         if (this.selected) {
-            context.drawImage(this.selected_texture, 0, 0, 64, 64, render_location.x, render_location.y, dest_size.x, dest_size.y);
+            context.drawImage(this.selected_texture, 0, 0, 64, 64, render_location.x-8, render_location.y+16, dest_size.x, dest_size.y);
         }
     }
 }

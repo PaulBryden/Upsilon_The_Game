@@ -134,7 +134,7 @@ let loop = ()=>{
     window.requestAnimationFrame(loop)
 }
     window.requestAnimationFrame(loop)
- return element;
+ return {};
 }
 
 function get_pathfinder(tilemap: TiledMap) : Pathfinder

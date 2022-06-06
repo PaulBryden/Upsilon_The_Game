@@ -115,8 +115,8 @@ export class GameManager {
                     this.last_tick + 10,
                     this.current_game_state.selected_entity,
                     new Position(
-                     (world_to_grid_coords(mouse_coords).x - 1.0),
-                      (world_to_grid_coords(mouse_coords).y - 0.5),
+                     (world_to_grid_coords(mouse_coords).x -2.0),
+                      (world_to_grid_coords(mouse_coords).y - 1.0),
                     )
                 );
                 this.addRequest(request);
