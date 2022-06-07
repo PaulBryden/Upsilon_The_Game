@@ -17,6 +17,16 @@ export class Sprite
     public uuid: number;
     public type: sprite_type;
 
+    constructor(x: number, y: number, width: number, height: number, spritesheet: HTMLImageElement, uuid: number, type: sprite_type)
+    {
+        this.x=x;
+        this.y=y;
+        this.width=width;
+        this.height=height;
+        this.spritesheet=spritesheet;
+        this.uuid=uuid;
+        this.type=type;
+    }
     /*To be overriden*/
     public get_z_index() : number
     {
@@ -34,13 +44,12 @@ export class Sprite
     {
     }
 
-    public  is_within_bounds(coords: Position) : boolean {
-        let sprite_world_coords =new Position(this.x,this.y)
-        if (coords.x < sprite_world_coords.x + 0.5
-            && coords.x > sprite_world_coords.x
-            && coords.y < sprite_world_coords.y + 0.5
-            && coords.y > sprite_world_coords.y)
-        {
+    public is_within_bounds(coords: Position): boolean {
+        let sprite_world_coords = grid_to_world_coords(new Position(this.x, this.y))
+        if (coords.x < sprite_world_coords.x + 55
+            && coords.x > sprite_world_coords.x 
+            && coords.y < sprite_world_coords.y + 55
+            && coords.y > sprite_world_coords.y ) {
             return true;
         }
         return false;

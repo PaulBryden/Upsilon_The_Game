@@ -1,11 +1,18 @@
 import { Rect } from "../Rect";
-import { Sprite } from "./sprite";
+import { Sprite, sprite_type } from "./sprite";
 
 export class TileSprite extends Sprite
 {
     public layer: number;
     public frame_number: number;
     
+    constructor(x: number, y: number, width: number, height: number, spritesheet: HTMLImageElement, uuid: number, layer: number, frame_number: number)
+    {
+        super(x,y,width,height,spritesheet,uuid,sprite_type.tile);
+        this.layer=layer;
+        this.frame_number=frame_number;
+    }
+
     public get_z_index() : number
     {
         if (this.layer == 1 || this.frame_number>15 )

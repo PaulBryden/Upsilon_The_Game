@@ -31,6 +31,13 @@ export class SpriteCreateRequest extends Request{
     public  sprite_uuid: number;
     public  sprite_type: sprite_type;
     public  position: Position;
+    constructor(tick: number, sprite_uuid: number, position: Position, sprite_type: sprite_type)
+    {
+        super(request_type.Create,tick);
+        this.sprite_uuid=sprite_uuid;
+        this.position=position;
+        this.sprite_type=sprite_type
+    }
 }
 
 export enum request_type

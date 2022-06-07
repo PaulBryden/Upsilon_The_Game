@@ -1,6 +1,6 @@
 import { Position } from "../Position";
-import { AnimatedSprite } from "./animated_sprite";
-import { grid_to_world_coords, Sprite } from "./sprite";
+import { AnimatedSprite, SpriteAnimation } from "./animated_sprite";
+import { grid_to_world_coords, Sprite, sprite_type } from "./sprite";
 
 export class EngineerSprite extends Sprite {
     public animated_sprite: AnimatedSprite;
@@ -8,12 +8,59 @@ export class EngineerSprite extends Sprite {
     public current_path: Position[];
     public previous_position: Position;
     public selected: boolean;
-    public x_render_location: number;
-    public y_render_location: number;
-
-    /*private*/
     ticks_to_move_one_square: number = 10;
     movement_tick_counter: number = 0;
+
+    constructor(x: number, y: number, width: number, height: number, spritesheet: HTMLImageElement, uuid: number, selected_texture: HTMLImageElement )
+    {
+        super(x,y,width,height,spritesheet,uuid,sprite_type.engineer);
+        this.animated_sprite= new AnimatedSprite(64, 64, [new SpriteAnimation(
+            "N",
+            0,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "NW",
+            1,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "W",
+            2,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "SW",
+            3,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "S",
+            4,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "SE",
+            5,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "E",
+            6,
+            17, //18 frames including original frame which we want to skip.
+            30
+        ), new SpriteAnimation(
+            "NE",
+            7,
+            17, //18 frames including original frame which we want to skip.
+            30
+        )],
+            true,
+        );
+        this.selected_texture=selected_texture;
+        this.current_path = [];
+        this.previous_position = new Position(Math.floor(this.x), Math.floor(this.y));
+    }
 
     public get_animation_direction(current_position: Position, next_position: Position): number {
         let x_differential = current_position.x - (next_position == undefined ? 0 : next_position.x);

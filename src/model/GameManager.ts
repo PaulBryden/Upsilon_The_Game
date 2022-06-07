@@ -1,10 +1,11 @@
 import { Pathfinder } from "../pathfinding/pathfinder";
 import { GameState } from "./GameState"
-import { RequestQueue, Request, request_type, SpriteMoveRequest } from "./Requests"
+import { RequestQueue, Request, request_type, SpriteMoveRequest, SpriteCreateRequest } from "./Requests"
 import cloneDeep from 'lodash.clonedeep';
 import { EngineerSprite } from "../sprites/engineersprite";
 import { Position } from "../Position";
-import { world_to_grid_coords } from "../sprites/sprite";
+import { sprite_type, world_to_grid_coords } from "../sprites/sprite";
+import { assets } from "../asset_loader";
 
 export enum RequestStatus {
     Synchronized,
@@ -16,13 +17,15 @@ export class GameManager {
     public current_game_state: GameState;
     public last_tick: number;
     public pathfinder: Pathfinder;
+    public asset: assets;
 
-    constructor(requests: RequestQueue, game_state_history: Map<number,GameState>, current_game_state: GameState, last_tick: number,pathfinder: Pathfinder){
-        this.requests=requests;
-        this.game_state_history=game_state_history;
-        this.current_game_state=current_game_state;
-        this.last_tick=last_tick;
-        this.pathfinder=pathfinder;
+    constructor(requests: RequestQueue, game_state_history: Map<number, GameState>, current_game_state: GameState, last_tick: number, pathfinder: Pathfinder, asset: assets) {
+        this.requests = requests;
+        this.game_state_history = game_state_history;
+        this.current_game_state = current_game_state;
+        this.last_tick = last_tick;
+        this.pathfinder = pathfinder;
+        this.asset = asset;
     }
     public process_tick(tick: number) {
         let local_tick = tick;
@@ -72,6 +75,22 @@ export class GameManager {
                 engineer_entity.update_path(path)
                 break;
             }
+            case request_type.Create: {
+                let create_request = request as SpriteCreateRequest;
+                switch (create_request.sprite_type) {
+                    case sprite_type.engineer:
+                        {
+                            let engy_sprite = new EngineerSprite(create_request.position.x, create_request.position.y, 64, 64, this.asset.builder_with_rock, create_request.sprite_uuid, this.asset.selected_texture_spritesheet);
+                            this.current_game_state.sprite_map.set(create_request.sprite_uuid, engy_sprite);
+                            this.current_game_state.sprite_uuid_list.push(create_request.sprite_uuid);
+                            break;
+                        }
+                    default: {
+                        break;
+                    }
+                }
+                break;
+            }
 
             default: {
                 //statements; 
@@ -83,40 +102,40 @@ export class GameManager {
     public render() {
         this.current_game_state.render();
     }
-    public addRequest(request: Request) : RequestStatus {
-    this.requests.AddRequest(request);
-    if (request.get_tick() < this.last_tick && (this.last_tick - request.get_tick()) < 45)
-    //Received old request. Time to synchronize
-    {
-        this.process_tick(request.get_tick());
-        return RequestStatus.Synchronized;
-    } else if (this.last_tick > 45 && request.get_tick() < this.last_tick && (this.last_tick - request.get_tick()) > 45)
+    public addRequest(request: Request): RequestStatus {
+        this.requests.AddRequest(request);
+        if (request.get_tick() < this.last_tick && (this.last_tick - request.get_tick()) < 45)
+        //Received old request. Time to synchronize
+        {
+            this.process_tick(request.get_tick());
+            return RequestStatus.Synchronized;
+        } else if (this.last_tick > 45 && request.get_tick() < this.last_tick && (this.last_tick - request.get_tick()) > 45)
         //Request is too old. Game State is desynchronized.
         {
-        return RequestStatus.Desynchronized;
-    } else {
-        if (this.last_tick > 47) {
-            this.requests
-                .PurgeRequestsOlderThanTick(this.last_tick - 47);
+            return RequestStatus.Desynchronized;
+        } else {
+            if (this.last_tick > 47) {
+                this.requests
+                    .PurgeRequestsOlderThanTick(this.last_tick - 47);
+            }
+            return RequestStatus.Synchronized;
         }
-        return RequestStatus.Synchronized;
     }
-}
     public mouse_clicked(mouse_coords: Position) {
-    let selected_unit_uuid = this
-        .current_game_state
-        .is_sprite_within_bounds(mouse_coords); //if it is within bounds, selection has occured. If it is not within bounds, move or other operation has been requested.
-        if( selected_unit_uuid!=undefined && selected_unit_uuid!=0) {
+        let selected_unit_uuid = this
+            .current_game_state
+            .is_sprite_within_bounds(mouse_coords); //if it is within bounds, selection has occured. If it is not within bounds, move or other operation has been requested.
+        if (selected_unit_uuid != undefined && selected_unit_uuid != 0) {
             this.current_game_state.mark_new_selected_sprite(selected_unit_uuid);
-        }else {
+        } else {
             /*Move Request*/
             if (this.current_game_state.selected_entity != 0) {
-                let request = new SpriteMoveRequest (
+                let request = new SpriteMoveRequest(
                     this.last_tick + 10,
                     this.current_game_state.selected_entity,
                     new Position(
-                     (world_to_grid_coords(mouse_coords).x -2.0),
-                      (world_to_grid_coords(mouse_coords).y - 1.0),
+                        (world_to_grid_coords(mouse_coords).x - 2.0),
+                        (world_to_grid_coords(mouse_coords).y - 1.0),
                     )
                 );
                 this.addRequest(request);
